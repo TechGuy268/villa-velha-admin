@@ -800,7 +800,7 @@ function clearFilters() {
 // ── Status update ─────────────────────────────────────────────────────────────
 async function updateStatus(id, status) {
   try {
-    const res = await fetch(`${API}/api/bookings/${id}/status`, {
+    const res = await fetch(`${API}/api/bookings/${id}`, {
       method:'PATCH',
       headers: authHeaders(),
       body: JSON.stringify({ status }),
