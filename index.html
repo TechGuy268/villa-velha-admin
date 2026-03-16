@@ -386,9 +386,38 @@ a { text-decoration:none; }
   .booking-row { grid-template-columns:60px 1fr 90px 80px 70px 140px; }
   .booking-row .time-col { display:none; }
 }
+/* Mobile bottom nav */
+.mobile-nav {
+  display:none;
+  position:fixed; bottom:0; left:0; right:0; z-index:7000;
+  background:var(--dark);
+  border-top:1px solid rgba(255,255,255,0.08);
+  padding:6px 0 env(safe-area-inset-bottom,6px);
+}
+.mobile-nav-inner {
+  display:flex; justify-content:space-around; align-items:center;
+}
+.mobile-nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 12px; cursor:pointer;
+  color:rgba(255,255,255,0.4);
+  font-size:9px; letter-spacing:1px; text-transform:uppercase;
+  transition:color 0.3s; border:none; background:none;
+  font-family:'Raleway',sans-serif; position:relative;
+}
+.mobile-nav-item .m-icon { font-size:22px; line-height:1; }
+.mobile-nav-item.active { color:var(--pink-light); }
+.mobile-nav-badge {
+  position:absolute; top:4px; right:6px;
+  background:var(--pink); color:white;
+  border-radius:10px; padding:1px 5px;
+  font-size:9px; display:none;
+}
+
 @media (max-width:800px) {
   .sidebar { display:none; }
-  .main { padding:20px; }
+  .mobile-nav { display:block; }
+  .main { padding:16px 16px 90px; }
   .stats-grid { grid-template-columns:repeat(2,1fr); }
   .table-header { display:none; }
   .booking-row { grid-template-columns:1fr; gap:6px; }
@@ -571,6 +600,29 @@ a { text-decoration:none; }
 <!-- Toast -->
 <div class="toast" id="toast" style="display:none;"></div>
 
+<!-- Mobile Bottom Nav -->
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-item active" id="mnav-dashboard" onclick="showPage('dashboard', this, true)">
+      <span class="m-icon">📊</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-bookings" onclick="showPage('bookings', this, true)">
+      <span class="m-icon">📅</span>
+      <span>Bookings</span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-pending" onclick="showPage('pending', this, true)">
+      <span class="m-icon">⏳</span>
+      <span>Pending</span>
+      <span class="mobile-nav-badge" id="mnavBadge"></span>
+    </button>
+    <button class="mobile-nav-item" id="mnav-blocked" onclick="showPage('blocked', this, true)">
+      <span class="m-icon">🚫</span>
+      <span>Block</span>
+    </button>
+  </div>
+</nav>
+
 <script>
 // Backend API URL — update this once your Railway backend is deployed
 const API = window.API_URL || 'https://villa-velha-production.up.railway.app';
@@ -637,10 +689,18 @@ function init() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-function showPage(name, el) {
+function showPage(name, el, isMobile = false) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
+
+  if (isMobile) {
+    document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+  } else {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    // sync mobile nav
+    const mItem = document.getElementById(`mnav-${name}`);
+    if (mItem) { document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active')); mItem.classList.add('active'); }
+  }
   el.classList.add('active');
 
   if (name === 'bookings') loadBookings();
@@ -661,11 +721,15 @@ async function loadStats() {
   document.getElementById('stat-declined').textContent  = s.declined;
 
   const badge = document.getElementById('pendingBadge');
+  const mBadge = document.getElementById('mnavBadge');
   if (s.pending > 0) {
     badge.textContent = s.pending;
     badge.style.display = 'inline-block';
+    mBadge.textContent = s.pending;
+    mBadge.style.display = 'inline-block';
   } else {
     badge.style.display = 'none';
+    mBadge.style.display = 'none';
   }
 }
 
