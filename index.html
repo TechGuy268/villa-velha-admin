@@ -800,7 +800,7 @@ function clearFilters() {
 // ── Status update ─────────────────────────────────────────────────────────────
 async function updateStatus(id, status) {
   try {
-    const res = await fetch(`${API}/api/bookings/${id}`, {
+    const res = await fetch(`${API}/api/bookings?id=${id}&action=status`, {
       method:'POST',
       headers: authHeaders(),
       body: JSON.stringify({ status }),
@@ -820,8 +820,8 @@ async function updateStatus(id, status) {
 
 async function deleteBooking(id) {
   if (!confirm('Delete this booking? This cannot be undone.')) return;
-  const res = await fetch(`${API}/api/bookings/${id}`, {
-    method:'POST', headers: authHeaders(), body: JSON.stringify({ _action: 'delete' }),
+  const res = await fetch(`${API}/api/bookings?id=${id}&action=delete`, {
+    method:'POST', headers: authHeaders(),
   });
   if (res.ok) { showToast('Booking deleted'); init(); closeModal(); }
 }
@@ -946,8 +946,8 @@ async function blockDate() {
 }
 
 async function unblockDate(date) {
-  const res = await fetch(`${API}/api/blocked-dates/${date}`, {
-    method:'POST', headers: authHeaders(), body: JSON.stringify({ _action: 'delete' }),
+  const res = await fetch(`${API}/api/blocked-dates?action=unblock&date=${date}`, {
+    method:'POST', headers: authHeaders(),
   });
   if (res.ok) { showToast('Date unblocked'); loadBlockedDates(); }
 }
