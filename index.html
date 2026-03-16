@@ -799,17 +799,22 @@ function clearFilters() {
 
 // ── Status update ─────────────────────────────────────────────────────────────
 async function updateStatus(id, status) {
-  const res = await fetch(`${API}/api/bookings/${id}/status`, {
-    method:'PATCH',
-    headers: authHeaders(),
-    body: JSON.stringify({ status }),
-  });
-  if (res.ok) {
-    showToast(`Booking ${status === 'confirmed' ? 'confirmed ✓' : 'declined ✕'}`);
-    init();
-    closeModal();
-  } else {
-    showToast('Error updating booking');
+  try {
+    const res = await fetch(`${API}/api/bookings/${id}/status`, {
+      method:'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      showToast(`Booking ${status === 'confirmed' ? 'confirmed ✓' : 'declined ✕'}`);
+      init();
+      closeModal();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showToast('Error: ' + (data.error || res.status));
+    }
+  } catch (err) {
+    showToast('Network error: ' + err.message);
   }
 }
 
